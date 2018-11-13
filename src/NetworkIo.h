@@ -72,22 +72,20 @@ namespace networkio
 		Interface& operator = (const Interface&) = delete;
 
 		Interface(const wchar_t* wszAddress, int ai_family);
-		Interface(addrinfo* pai, unsigned int if6index);
+		Interface(const addrinfo* pai, unsigned int if6index);
 #ifndef CHATTERM_OS_WINDOWS
 		Interface(const sockaddr* pcaddr, unsigned int if6index);
 #endif // CHATTERM_OS_WINDOWS
 
 		~Interface(void)
 		{
-			freeaddrinfo(pai_);
-			/*
-			if(pai_ && (pai_ != paibuf_) ) freeaddrinfo(pai_);
-			if(paibuf_)
-			{
-				delete[] paibuf_->ai_addr;
-				delete reinterpret_cast<unsigned char*>(paibuf_);
-			}
-			*/
+			if(pai_ && (pai_ != reinterpret_cast<addrinfo*>(paibufPtr_.get())) ) freeaddrinfo(pai_);
+
+			//if(paibufPtr_)
+			//{
+			///	delete[] reinterpret_cast<unsigned char*>(paibufPtr_->ai_addr);
+			//	//delete paibuf_;
+			//}
 		}
 
 		std::wstring getStringAddress(unsigned short port);
@@ -95,7 +93,7 @@ namespace networkio
 
 	private:
 		addrinfo* pai_;
-		addrinfo* paibuf_;
+		std::unique_ptr<unsigned char[]> paibufPtr_;
 		unsigned int ipv6_if_index_;
 
 	friend class Receiver;
@@ -121,7 +119,7 @@ namespace networkio
 		/**
 		Binds socket to specified network interface, port; Sets necessary socket options
 		*/
-		int bindToInterface(const std::shared_ptr<Interface>&, unsigned short port, DWORD dwTTL);
+		int bindToInterface(const std::shared_ptr<Interface>& refPtrIf, unsigned short port, DWORD dwTTL);
 
 		int sendTo(const sockaddr* paddr, const char* buf, int len) const;
 

@@ -1215,7 +1215,7 @@ namespace networkio
 	//End of Global functions
 	//////////////////////////////////////////////////////////////////
 
-	Interface::Interface(const wchar_t* wszAddress, int ai_family) : pai_(0), paibuf_(0), ipv6_if_index_(0)
+	Interface::Interface(const wchar_t* wszAddress, int ai_family) : pai_(nullptr), ipv6_if_index_(0)
 	{
 		std::unique_ptr<char[]> ptrAddress;
 		size_t buflen = 0;
@@ -1249,21 +1249,22 @@ namespace networkio
 		}
 	}
 
-	Interface::Interface(addrinfo* pai, unsigned int if6index) : pai_(pai), paibuf_(0), ipv6_if_index_(if6index)
+	Interface::Interface(const addrinfo* cpai, unsigned int if6index) : pai_(nullptr), ipv6_if_index_(if6index)
 	{
-		/*
-		paibuf_ = new addrinfo;
-		memcpy(paibuf_, cpai, sizeof(*paibuf_));
+		//reserve buffer for addrinfo data
+		paibufPtr_ = std::make_unique<unsigned char[]>(sizeof(addrinfo)+ __max(sizeof(sockaddr_in6), cpai->ai_addrlen));
+		memcpy(paibufPtr_.get(), cpai, sizeof(addrinfo));
 
-		unsigned char* addr_buf = new unsigned char[__max(sizeof(sockaddr_in6), cpai->ai_addrlen)];
+		unsigned char* addr_buf = paibufPtr_.get() + sizeof(addrinfo);
+
 		memcpy(addr_buf, cpai->ai_addr, cpai->ai_addrlen);
-		paibuf_->ai_addr = reinterpret_cast<sockaddr*>(addr_buf);
-		paibuf_->ai_next = 0;
-		paibuf_->ai_socktype = SOCK_DGRAM;
-		paibuf_->ai_protocol = IPPROTO_UDP;
-		
-		pai_ = paibuf_;
-		*/
+
+		pai_ = reinterpret_cast<addrinfo*>(paibufPtr_.get());
+
+		pai_->ai_addr = reinterpret_cast<sockaddr*>(addr_buf);
+		pai_->ai_next = 0;
+		pai_->ai_socktype = SOCK_DGRAM;
+		pai_->ai_protocol = IPPROTO_UDP;
 
 		if(pai_ && (AF_INET6==pai_->ai_family) && pai_->ai_addr)
 		{

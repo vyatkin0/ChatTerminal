@@ -166,10 +166,13 @@ bool PERSONAL_INFO::getOS(std::wstring& strOS)
 	OSVERSIONINFOEX osvi  = {0};
 	BOOL bOsVersionInfoEx = FALSE;
 
-	// Try calling GetVersionEx using the OSVERSIONINFOEX structure.   
+	// Try calling GetVersionEx using the OSVERSIONINFOEX structure.
 	// If that fails, try using the OSVERSIONINFO structure.
 
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+
+#pragma warning(push)
+#pragma warning ( disable: 4996 )
 
 	if(FALSE == (bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO *) &osvi)))
 	{
@@ -178,6 +181,8 @@ bool PERSONAL_INFO::getOS(std::wstring& strOS)
 		if (! GetVersionEx ( (OSVERSIONINFO *) &osvi) )
 			return false;
 	}
+
+#pragma warning( pop )
 
 	switch (osvi.dwPlatformId)
 	{

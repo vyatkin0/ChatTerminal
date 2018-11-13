@@ -40,9 +40,9 @@ namespace consoleio
 
 	private:
 		PrintLinesMonitor(const PrintLinesMonitor&) = delete;
-		PrintLinesMonitor(ContainersMonitor&&) = delete;
+		PrintLinesMonitor(PrintLinesMonitor&&) = delete;
 		PrintLinesMonitor& operator=(const PrintLinesMonitor&) = delete;
-		PrintLinesMonitor& operator=(ContainersMonitor&&) = delete;
+		PrintLinesMonitor& operator=(PrintLinesMonitor&&) = delete;
 		PrintLinesMonitor* operator&() = delete;
 
 		static void Initialize()
